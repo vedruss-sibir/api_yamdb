@@ -2,8 +2,8 @@ from django.db import models
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=100, blank=True, unique=True)
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(max_length=50, blank=True, unique=True)
 
     def __str__(self):
         return self.name
@@ -26,10 +26,12 @@ class Titles(models.Model):
         on_delete=models.SET_NULL,
         related_name="genre",
         verbose_name="Жанр",
+        blank=True,
     )
     category = models.OneToOneField(
         Category,
         verbose_name="Категория",
         on_delete=models.SET_NULL,
         related_name="category",
+        blank=True,
     )
