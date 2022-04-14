@@ -1,13 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-
-class User(AbstractUser):
-    user_roles = (
+ROLES = (
         ('admin', 'администратор'),
         ('moderator', 'модератор'),
         ('user', 'пользователь'),
     )
+
+
+class User(AbstractUser):
     username = models.CharField(
         'Имя пользователя',
         max_length=150,
@@ -15,11 +16,12 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         'Электронная почта',
+        max_length=254,
         unique=True,
     )
-    user_role = models.CharField(
+    role = models.CharField(
         'Пользовательская роль',
-        choices=user_roles,
+        choices=ROLES,
         max_length=15,
         default='user',
     )
@@ -28,7 +30,7 @@ class User(AbstractUser):
         max_length=100,
         null=True,
     )
-    biography = models.TextField(
+    bio = models.TextField(
         'Биография',
         blank=True,
     )
