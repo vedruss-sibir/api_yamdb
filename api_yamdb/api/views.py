@@ -4,22 +4,11 @@ from rest_framework import viewsets, filters
 
 from ..api.permissions import IsAuthorOrReadOnlyPermission
 from reviews.models import Titles, User, Genre, Category
-from api.serializerz import (
+from api.serializers import (
     GenreSerializer,
     CategorySerializer,
     TitlesSerializer,
-    UserSerializer,
 )
-
-
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
-class GroupViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -50,5 +39,6 @@ class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     serializer_class = TitlesSerializer
     permission_classes = (IsAuthorOrReadOnlyPermission,)
+    pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ("name", "genre", "category", "year")
