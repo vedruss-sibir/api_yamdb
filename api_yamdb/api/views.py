@@ -2,6 +2,9 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import viewsets, filters
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import AccessToken
 
 from api.permissions import IsAuthorOrReadOnlyPermission
 from reviews.models import Titles, User, Genre, Category, Review
@@ -12,6 +15,22 @@ from api.serializers import (
     ReviewSerializer, 
     CommentSerializer
 )
+
+
+class UsersViewSet(viewsets.ModelViewSet):
+    pass
+
+
+class SignUpAPI(APIView):
+    pass
+
+
+class TokenAPI(APIView):
+    pass
+
+
+class MeAPI(APIView):
+    pass
 
 
 class GenreViewSet(viewsets.ModelViewSet):
