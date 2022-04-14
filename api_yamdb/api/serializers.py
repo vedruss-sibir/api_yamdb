@@ -1,6 +1,31 @@
 from rest_framework import serializers
+from datetime import date
 
-from api_yamdb.reviews.models import Comment, Review
+from reviews.models import Category, Genre, Titles, Comment, Review
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = Category
+
+
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = Genre
+
+
+class TitlesSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = "__all__"
+        model = Titles
+
+    def validate_year(self, value):
+        year = date.today().year
+        if year > value:
+            raise serializers.ValidationError("год произведения из будущего")
+        return value
 
 
 class ReviewSerializer(serializers.ModelSerializer):
