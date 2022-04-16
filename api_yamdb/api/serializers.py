@@ -51,27 +51,20 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    queryset=User.objects.all()
-    email = serializers.EmailField(
-        required=True)
     username = serializers.CharField(
-        required=True)
+        max_length=150,
+        required=True
+    )
+    email = serializers.EmailField(required=True, max_length=254)
 
+    def validate(self, data):
+        if data['username'] == "me":
+            raise serializers.ValidationError("Недопустимое имя пользователя!")
+        return data
+    
     class Meta:
         model = User
         fields = ('username', 'email',)
-
-    def validate(self, data):
-        if data['username'] == 'me':
-            raise serializers.ValidationError("Нельзя подписаться на себя!")
-        return data
-
-
-class UserSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = '__all__'
 
 
 class TokenSerializer(serializers.ModelSerializer):
