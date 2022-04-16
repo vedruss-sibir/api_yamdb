@@ -13,6 +13,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+EMAIL_FROM = os.getenv('EMAIL_FROM')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 # Application definition
 

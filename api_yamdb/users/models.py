@@ -1,18 +1,29 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-ROLES = (
-        ('admin', 'администратор'),
-        ('moderator', 'модератор'),
-        ('user', 'пользователь'),
-    )
-
+    
+    
+ADMIN = 'admin'
+MODERATOR = 'moderator'
+USER = 'user'
 
 class User(AbstractUser):
+    ROLES = (
+        (ADMIN, 'admin'),
+        (MODERATOR, 'moderator'),
+        (USER, 'user'),
+    )
     username = models.CharField(
         'Имя пользователя',
         max_length=150,
         unique=True,
+    )
+    first_name = models.CharField(
+        max_length=150,
+        blank=True
+    )
+    last_name = models.CharField(
+        max_length=150,
+        blank=True
     )
     email = models.EmailField(
         'Электронная почта',
@@ -34,6 +45,18 @@ class User(AbstractUser):
         'Биография',
         blank=True,
     )
+
+    @property
+    def is_admin(self):
+        return self.role == ADMIN
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
+
+    @property
+    def is_user(self):
+        return self.role == USER
 
     def __str__(self):
         return str(self.username)
