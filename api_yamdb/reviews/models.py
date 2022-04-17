@@ -1,5 +1,7 @@
 from django.db import models
 
+from users.models import User
+
 
 class Category(models.Model):
     name = models.CharField(max_length=256)
@@ -27,6 +29,7 @@ class Titles(models.Model):
         related_name="genre",
         verbose_name="Жанр",
         blank=True,
+        null=True,
     )
     category = models.OneToOneField(
         Category,
@@ -34,4 +37,25 @@ class Titles(models.Model):
         on_delete=models.SET_NULL,
         related_name="category",
     )
-    score = models.PositiveSmallIntegerField(verbose_name="Оценка от 1 до 10")
+    score = models.PositiveSmallIntegerField(
+        verbose_name="Оценка от 1 до 10",
+        blank=True,
+        null=True,
+    )
+
+
+class Review(models.Model):
+    title = models.ForeignKey(Titles, on_delete=models.CASCADE, related_name="reviews")
+    text = models.TextField()
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
+    score = models.IntegerField()
+    pub_date = models.DateTimeField("Дата добавления", auto_now_add=True, db_index=True)
+
+
+class Comment(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
+    review = models.ForeignKey(
+        Review, on_delete=models.CASCADE, related_name="comments"
+    )
+    text = models.TextField()
+    pub_date = models.DateTimeField("Дата добавления", auto_now_add=True, db_index=True)
