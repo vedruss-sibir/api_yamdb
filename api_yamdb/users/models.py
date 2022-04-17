@@ -1,43 +1,48 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-
-ADMIN = "admin"
-MODERATOR = "moderator"
-USER = "user"
-
+    
+    
+ADMIN = 'admin'
+MODERATOR = 'moderator'
+USER = 'user'
 
 class User(AbstractUser):
-    ROLES = (
-        (ADMIN, "admin"),
-        (MODERATOR, "moderator"),
-        (USER, "user"),
-    )
+    ROLES = {
+        (ADMIN, 'admin'),
+        (MODERATOR, 'moderator'),
+        (USER, 'user'),
+    }
     username = models.CharField(
-        "Имя пользователя",
+        'Имя пользователя',
         max_length=150,
         unique=True,
     )
-    first_name = models.CharField(max_length=150, blank=True)
-    last_name = models.CharField(max_length=150, blank=True)
+    first_name = models.CharField(
+        max_length=150,
+        blank=True
+    )
+    last_name = models.CharField(
+        max_length=150,
+        blank=True
+    )
     email = models.EmailField(
-        "Электронная почта",
+        'Электронная почта',
         max_length=254,
         unique=True,
     )
     role = models.CharField(
-        "Пользовательская роль",
+        'Пользовательская роль',
         choices=ROLES,
         max_length=15,
-        default="user",
+        default='user',
     )
     confirmation_code = models.CharField(
-        "Код подтверждения",
+        'Код подтверждения',
         max_length=100,
         null=True,
     )
     bio = models.TextField(
-        "Биография",
+        'Биография',
         blank=True,
     )
 
