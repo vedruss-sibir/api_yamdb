@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from datetime import date
 
 from rest_framework import serializers
@@ -50,27 +52,32 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
 
 
-class RegistrationSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(
-        max_length=150,
-        required=True
-    )
-    email = serializers.EmailField(required=True, max_length=254)
-
-    def validate(self, data):
-        if data['username'] == "me":
-            raise serializers.ValidationError("Недопустимое имя пользователя!")
-        return data
-    
-    class Meta:
-        model = User
-        fields = ('username', 'email',)
-
-
-class TokenSerializer(serializers.ModelSerializer):
-    username = serializers.CharField()
-    confirmation_code = serializers.CharField()
+class UserSerializer(serializers.ModelSerializer):
+    role = serializers.ChoiceField(choices=User.ROLES, default='user')
 
     class Meta:
         model = User
-        fields = ('username', 'confirmation_code')
+        fields = (
+            'username',
+            'email',
+            'role',
+            'bio',
+            'first_name',
+            'last_name'
+        )
+        role = serializers.CharField(read_only=True)
+
+    def create(self, validated_data):
+        confirmation_code = uuid4()
+        user = User.objects.create(
+            **validated_data,
+            confirmation_code=confirmation_code
+        )
+        return user
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                'Не допустимое имя пользователя'
+            )
+        return value
