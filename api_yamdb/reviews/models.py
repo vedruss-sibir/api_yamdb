@@ -33,5 +33,5 @@ class Titles(models.Model):
         verbose_name="Категория",
         on_delete=models.SET_NULL,
         related_name="category",
-        blank=True,
     )
+    score = models.PositiveSmallIntegerField(verbose_name="Оценка от 1 до 10")
