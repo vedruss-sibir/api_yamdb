@@ -28,6 +28,7 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
+    pagination_class = LimitOffsetPagination
     serializer_class = CategorySerializer
     permission_classes = (IsAuthorOrReadOnlyPermission,)
     filter_backends = (filters.SearchFilter,)

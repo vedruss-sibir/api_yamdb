@@ -23,7 +23,7 @@ class Titles(models.Model):
     name = models.TextField(verbose_name="Название произведения")
     year = models.DateTimeField(verbose_name="год произведения")
     description = models.TextField(max_length=400)
-    genre = models.ForeignKey(
+    genre = models.ManyToManyField(
         Genre,
         on_delete=models.SET_NULL,
         related_name="genre",
