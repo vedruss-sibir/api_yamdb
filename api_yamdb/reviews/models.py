@@ -25,17 +25,17 @@ class Titles(models.Model):
     description = models.TextField(max_length=400)
     genre = models.ManyToManyField(
         Genre,
-        on_delete=models.SET_NULL,
+        # on_delete=models.SET_NULL,
         related_name="genre",
         verbose_name="Жанр",
         blank=True,
-        null=True,
     )
     category = models.OneToOneField(
         Category,
         verbose_name="Категория",
         on_delete=models.SET_NULL,
         related_name="category",
+        null=True,
     )
     score = models.PositiveSmallIntegerField(
         verbose_name="Оценка от 1 до 10",
