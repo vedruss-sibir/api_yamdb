@@ -57,8 +57,8 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 @api_view(['POST'])
 @permission_classes((AllowAny,))
-def create_user(requset)
-    serializers = UserSerializer(data=requset.data)
+def create_user(request):
+    serializers = UserSerializer(data=request.data)
     serializers.is_valid(raise_exception=True)
     email = serializers.validated_data['email']
     username = serializers.validated_data['username']
