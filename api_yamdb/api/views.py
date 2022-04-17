@@ -117,6 +117,7 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
+    pagination_class = LimitOffsetPagination
     serializer_class = CategorySerializer
     # permission_classes = (AuthorOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
@@ -141,13 +142,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
     # permission_classes = [IsAuthorOrReadOnly]
 
     def get_queryset(self):
-        id = self.kwargs.get('id')
-        title = get_object_or_404(Titles, pk=id)
+        title_id = self.kwargs.get("title_id")
+        title = get_object_or_404(Titles, pk=title_id)
         return title.reviews.all()
 
     def perform_create(self, serializer):
-        id = self.kwargs.get('id')
-        title = get_object_or_404(Titles, pk=id)
+        title_id = self.kwargs.get("title_id")
+        title = get_object_or_404(Titles, pk=title_id)
         serializer.save(author=self.request.user, title=title)
 
 
@@ -156,11 +157,11 @@ class CommentViewSet(viewsets.ModelViewSet):
     # permission_classes = [IsAuthorOrReadOnly]
 
     def get_queryset(self):
-        id = self.kwargs.get('id')
-        review = get_object_or_404(Review, pk=id)
+        review_id = self.kwargs.get("review_id")
+        review = get_object_or_404(Review, pk=review_id)
         return review.comments.all()
 
     def perform_create(self, serializer):
-        id = self.kwargs.get('id')
-        review = get_object_or_404(Review, pk=id)
+        review_id = self.kwargs.get("review_id")
+        review = get_object_or_404(Review, pk=review_id)
         serializer.save(author=self.request.user, review=review)

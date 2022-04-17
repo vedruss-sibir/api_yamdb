@@ -21,6 +21,9 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitlesSerializer(serializers.ModelSerializer):
+    genre = serializers.StringRelatedField(many=True, read_only=True)
+    category = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         fields = "__all__"
         model = Titles
@@ -28,7 +31,9 @@ class TitlesSerializer(serializers.ModelSerializer):
     def validate_year(self, value):
         year = date.today().year
         if year > value:
-            raise serializers.ValidationError("год произведения из будущего")
+            raise serializers.ValidationError(
+                "год произведения не может быть из будущего"
+            )
         return value
 
 
