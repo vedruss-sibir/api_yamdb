@@ -8,6 +8,7 @@ from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Titles, Genre, Category, Review
@@ -28,6 +29,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
+    pagination_class = PageNumberPagination
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
@@ -62,7 +64,7 @@ def create_user(request):
     serializers.is_valid(raise_exception=True)
     email = serializers.validated_data['email']
     username = serializers.validated_data['username']
-    valid_user = User.objects.filter(email=email, username=username)
+    valid_user = User.objects.filter(email=email.lower(), username=username)
     if valid_user.exists():
         send_mail(
             'Код для доступа к токену',
