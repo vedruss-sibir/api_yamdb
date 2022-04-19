@@ -33,26 +33,22 @@ class UsersViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('username',)
+    search_fields = ("username",)
 
     @action(
         detail = False,
         methods=['GET', 'PATCH'],
         url_path='me',
         permission_classes=(IsAuthenticated,),
-        serializer_class=UserSerializer
+        serializer_class=UserSerializer,
     )
     def get_user(self, request, pk=None):
         user = get_object_or_404(User, pk=request.user.id)
-        if request.method == 'GET':
+        if request.method == "GET":
             serializer = self.get_serializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        if request.method == 'PATCH':
-            serializer = self.get_serializer(
-                user,
-                data=request.data,
-                partial=True
-            )
+        if request.method == "PATCH":
+            serializer = self.get_serializer(user, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save(role = user.role)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -99,6 +95,49 @@ def create_token(request):
     )
 
 
+@api_view(["POST"])
+@permission_classes((AllowAny,))
+def create_user(request):
+    serializers = UserSerializer(data=request.data)
+    serializers.is_valid(raise_exception=True)
+    email = serializers.validated_data["email"]
+    username = serializers.validated_data["username"]
+    valid_user = User.objects.filter(email=email, username=username)
+    if valid_user.exists():
+        send_mail(
+            "Код для доступа к токену",
+            f"{valid_user[0].confirmation_code}",
+            DEFAULT_FROM_EMAIL,
+            [f"{email}"],
+        )
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    if not valid_user.exists():
+        confirmation_code = uuid4()
+        user, created = User.objects.get_or_create(
+            **serializers.validated_data, confirmation_code=confirmation_code
+        )
+        send_mail(
+            "Код для доступа к токену",
+            f"{user.confirmation_code}",
+            DEFAULT_FROM_EMAIL,
+            [f"{email}"],
+        )
+        return Response(serializers.data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes((AllowAny,))
+def create_token(requset):
+    serializers = UserSerializer(data=requset.data)
+    serializers.is_valid(raise_exception=True)
+    username = serializers.validated_data["username"]
+    confirmation_code = serializers.validated_data["confirmation_code"]
+    user = get_object_or_404(User, username=username)
+    if confirmation_code != user.confirmation_code:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    token = RefreshToken.for_user(user)
+    return Response({"token": str(token.access_token)}, status=status.HTTP_200_OK)
+
 
 class GenreViewSet(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
@@ -114,6 +153,7 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
+    pagination_class = LimitOffsetPagination
     serializer_class = CategorySerializer
     # permission_classes = (AuthorOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
@@ -138,13 +178,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
     # permission_classes = [IsAuthorOrReadOnly]
 
     def get_queryset(self):
-        id = self.kwargs.get('id')
-        title = get_object_or_404(Titles, pk=id)
+        title_id = self.kwargs.get("title_id")
+        title = get_object_or_404(Titles, pk=title_id)
         return title.reviews.all()
 
     def perform_create(self, serializer):
-        id = self.kwargs.get('id')
-        title = get_object_or_404(Titles, pk=id)
+        title_id = self.kwargs.get("title_id")
+        title = get_object_or_404(Titles, pk=title_id)
         serializer.save(author=self.request.user, title=title)
 
 
@@ -153,11 +193,11 @@ class CommentViewSet(viewsets.ModelViewSet):
     # permission_classes = [IsAuthorOrReadOnly]
 
     def get_queryset(self):
-        id = self.kwargs.get('id')
-        review = get_object_or_404(Review, pk=id)
+        review_id = self.kwargs.get("review_id")
+        review = get_object_or_404(Review, pk=review_id)
         return review.comments.all()
 
     def perform_create(self, serializer):
-        id = self.kwargs.get('id')
-        review = get_object_or_404(Review, pk=id)
+        review_id = self.kwargs.get("review_id")
+        review = get_object_or_404(Review, pk=review_id)
         serializer.save(author=self.request.user, review=review)
