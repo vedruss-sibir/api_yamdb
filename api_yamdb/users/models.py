@@ -31,7 +31,7 @@ class User(AbstractUser):
         unique=True,
     )
     role = models.CharField(
-        'Пользовательская роль',
+        'Разрешения пользователя',
         choices=ROLES,
         max_length=15,
         default='user',
@@ -46,6 +46,10 @@ class User(AbstractUser):
         blank=True,
     )
 
+
+    def __str__(self):
+        return str(self.username)
+
     @property
     def is_admin(self):
         return self.role == ADMIN
@@ -57,6 +61,3 @@ class User(AbstractUser):
     @property
     def is_user(self):
         return self.role == USER
-
-    def __str__(self):
-        return str(self.username)

@@ -8,8 +8,7 @@ from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.pagination import PageNumberPagination
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Titles, Genre, Category, Review
 from users.models import User
@@ -21,7 +20,9 @@ from .serializers import (
     TitlesSerializer,
     ReviewSerializer,
     CommentSerializer,
-    UserSerializer
+    UserSerializer,
+    RegistrationSerializer,
+    CreateTokenSerializer
 )
 
 
@@ -29,19 +30,19 @@ class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
-    pagination_class = PageNumberPagination
+    pagination_class = LimitOffsetPagination
     lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
 
     @action(
-        detail=False,
-        methods=['get', 'patch'],
+        detail = False,
+        methods=['GET', 'PATCH'],
         url_path='me',
         permission_classes=(IsAuthenticated,),
         serializer_class=UserSerializer
     )
-    def set_profile(self, request, pk=None):
+    def get_user(self, request, pk=None):
         user = get_object_or_404(User, pk=request.user.id)
         if request.method == 'GET':
             serializer = self.get_serializer(user)
@@ -53,56 +54,50 @@ class UsersViewSet(viewsets.ModelViewSet):
                 partial=True
             )
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            serializer.save(role = user.role)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
-@permission_classes((AllowAny,))
 def create_user(request):
-    serializers = UserSerializer(data=request.data)
-    serializers.is_valid(raise_exception=True)
-    email = serializers.validated_data['email']
-    username = serializers.validated_data['username']
-    valid_user = User.objects.filter(email=email.lower(), username=username)
-    if valid_user.exists():
-        send_mail(
-            'Код для доступа к токену',
-            f'{valid_user[0].confirmation_code}',
-            DEFAULT_FROM_EMAIL,
-            [f'{email}'],
-        )
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-    if not valid_user.exists():
-        confirmation_code = uuid4()
-        user, created = User.objects.get_or_create(
-            **serializers.validated_data,
-            confirmation_code=confirmation_code
-        )
-        send_mail(
-            'Код для доступа к токену',
+    serializer = RegistrationSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data.get('username')
+    email = serializer.validated_data.get('email')
+    real_username = User.objects.filter(username=username)
+    real_email = User.objects.filter(email=email)
+    if real_username.exists() or real_email.exists():
+        return Response(serializer.data,status=status.HTTP_400_BAD_REQUEST)
+    user = User.objects.create_user(username=username, email=email)
+    user.confirmation_code = uuid4()
+    user.save()
+    send_mail(
+            'Ваш код подтверждения:',
             f'{user.confirmation_code}',
             DEFAULT_FROM_EMAIL,
             [f'{email}'],
-        )
-        return Response(serializers.data, status=status.HTTP_200_OK)
+    )
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
-@permission_classes((AllowAny,))
-def create_token(requset):
-    serializers = UserSerializer(data=requset.data)
-    serializers.is_valid(raise_exception=True)
-    username = serializers.validated_data['username']
-    confirmation_code = serializers.validated_data['confirmation_code']
+def create_token(request):
+    serializer = CreateTokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data.get('username')
+    confirmation_code = serializer.validated_data.get('confirmation_code')
     user = get_object_or_404(User, username=username)
-    if confirmation_code != user.confirmation_code:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-    token = RefreshToken.for_user(user)
+    if confirmation_code == user.confirmation_code:
+        token = AccessToken.for_user(user)
+        return Response(
+            {'token': f'{token}'},
+            status=status.HTTP_200_OK
+        )
     return Response(
-        {'token': str(token.access_token)},
-        status=status.HTTP_200_OK
+        {'confirmation_code': 'Неверный код подтверждения'},
+        status=status.HTTP_400_BAD_REQUEST
     )
+
 
 
 class GenreViewSet(viewsets.ModelViewSet):
