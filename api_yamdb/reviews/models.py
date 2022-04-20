@@ -19,7 +19,7 @@ class Genre(models.Model):
         return self.name
 
 
-class Titles(models.Model):
+class Title(models.Model):
     name = models.TextField(verbose_name="Название произведения")
     year = models.DateTimeField(verbose_name="год произведения")
     description = models.TextField(max_length=400)
@@ -29,7 +29,7 @@ class Titles(models.Model):
         related_name="genre",
         verbose_name="Жанр",
         blank=True,
-        null=True
+        null=True,
     )
     category = models.OneToOneField(
         Category,
@@ -39,16 +39,20 @@ class Titles(models.Model):
         null=True,
     )
     score = models.PositiveSmallIntegerField(
-        verbose_name="Оценка от 1 до 10",
-        blank=True,
-        null=True
+        verbose_name="Оценка от 1 до 10", blank=True, null=True
     )
+
+
+class GenresTitle(models.Model):
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title = models.ForeignKey(Title, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.genre} {self.title}"
 
 
 class Review(models.Model):
-    title = models.ForeignKey(
-        Titles, on_delete=models.CASCADE, related_name='reviews'
-    )
+    title = models.ForeignKey(Title, on_delete=models.CASCADE, related_name="reviews")
     text = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
     score = models.IntegerField()
