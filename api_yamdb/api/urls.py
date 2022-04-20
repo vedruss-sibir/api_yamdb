@@ -6,7 +6,7 @@ from . import views
 app_name = "api"
 
 router = DefaultRouter()
-router.register(r"title", views.TitlesViewSet, basename="titles")
+router.register(r"titles", views.TitlesViewSet, basename="titles")
 router.register(r"categories", views.CategoryViewSet, basename="category")
 router.register(r"genres", views.GenreViewSet, basename="genre")
 router.register(r"users", views.UsersViewSet, basename="users")
