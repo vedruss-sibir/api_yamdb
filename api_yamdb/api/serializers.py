@@ -3,20 +3,32 @@ from datetime import date
 from django.db.models import Avg
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
-from reviews.models import Category, Genre, Title, Comment, Review
+from reviews.models import Category, Genre, Title, Comment, Review, GenreTitle
 from users.models import User
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        fields = "__all__"
+        # fields = "__all__"
+        exclude = ('id',)
         model = Category
+
+
+class GenreTitleSerializer(serializers.ModelSerializer):
+    genre = serializers.ReadOnlyField(source='genre.id')
+    title = serializers.ReadOnlyField(source='title.id')
+
+    class Meta:
+        model = GenreTitle
+        fields = ('genre', 'title')
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = "__all__"
+        # fields = "__all__"
+        exclude = ('id',)
         model = Genre
 
 
@@ -46,16 +58,24 @@ class TitlesSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
 
     class Meta:
-        fields = "__all__"
+        fields = (
+            "id",
+            "name",
+            "year",
+            "description",
+            "category",
+            "genre",
+            "rating",
+        )
         model = Title
 
-    def validate_year(self, value):
-        year = date.today().year
-        if year > value:
-            raise serializers.ValidationError(
-                "год произведения не может быть из будущего"
-            )
-        return value
+    # def validate_year(self, value):
+    #     year = date.today().year
+    #     if year > value:
+    #         raise serializers.ValidationError(
+    #             "год произведения не может быть из будущего"
+    #         )
+    #     return value
 
     def get_rating(self, obj):
         reviews = Review.objects.filter(title=obj).all()
@@ -64,15 +84,23 @@ class TitlesSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
+    author = serializers.SlugRelatedField(read_only=True,
+                                          slug_field="username")
 
     class Meta:
         fields = "__all__"
         model = Review
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=('author', 'title')
+            )
+        ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
+    author = serializers.SlugRelatedField(read_only=True,
+                                          slug_field="username")
 
     class Meta:
         fields = "__all__"
