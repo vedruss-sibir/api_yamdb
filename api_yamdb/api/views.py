@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
+from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import viewsets, filters, status, mixins
@@ -12,9 +13,9 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from api.filitres import TitleFilter
 
-from reviews.models import Title, Genre, Category, Review
+from reviews.models import Title, Genre, Category, Review, Comment
 from users.models import User
-from .permissions import IsAdmin, IsAdminOrReadOnly
+from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorModeratorAdminOrReadOnly
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
 from .serializers import (
     GenreSerializer,
@@ -106,7 +107,7 @@ class GenreViewSet(
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ("name",)
+    search_fields = ("name", "slug")
     lookup_field = "slug"
 
 
@@ -120,12 +121,14 @@ class CategoryViewSet(
     pagination_class = LimitOffsetPagination
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ("name",)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    search_fields = ("name", "slug")
+    filterset_fields = ('name', 'slug')
+    lookup_field = "slug"
 
-    def get_queryset(self):
-        category = get_object_or_404(Category, slug=self.kwargs.get("slug"))
-        return category
+    # def get_queryset(self):
+    #     category = get_object_or_404(Category, slug=self.kwargs.get("slug"))
+    #     return category
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
@@ -133,9 +136,9 @@ class TitlesViewSet(viewsets.ModelViewSet):
     serializer_class = TitlesSerializer
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = LimitOffsetPagination
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     filterset_class = TitleFilter
-    search_fields = ("name", "genre", "category", "year")
+    search_fields = ("name", "genre__slug", "category__slug", "year")
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
@@ -144,8 +147,9 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    pagination_class = LimitOffsetPagination
     serializer_class = ReviewSerializer
-    # permission_classes = [IsAuthorOrReadOnly]
+    permission_classes = [IsAuthorModeratorAdminOrReadOnly]
 
     def get_queryset(self):
         title_id = self.kwargs.get("title_id")
@@ -159,8 +163,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    pagination_class = LimitOffsetPagination
     serializer_class = CommentSerializer
-    # permission_classes = [isAdminOrReadOnly]
+    permission_classes = [IsAuthorModeratorAdminOrReadOnly]
 
     def get_queryset(self):
         review_id = self.kwargs.get("review_id")
