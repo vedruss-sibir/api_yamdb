@@ -1,35 +1,26 @@
 from uuid import uuid4
 
-from django.shortcuts import get_object_or_404
+from api.filitres import TitleFilter
 from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-
-from rest_framework import viewsets, filters, status, mixins
-from rest_framework.response import Response
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-
-from api.filitres import TitleFilter
-from reviews.models import Title, Genre, Category, Review
+from reviews.models import Category, Genre, Review, Title
 from users.models import User
-from .permissions import (
-    IsAdmin,
-    IsAdminOrReadOnly,
-    IsAuthorModeratorAdminOrReadOnly
-)
+
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
-from .serializers import (
-    GenreSerializer,
-    CategorySerializer,
-    TitlesSerializer,
-    TitlePostSerializer,
-    ReviewSerializer,
-    CommentSerializer,
-    UserSerializer,
-    RegistrationSerializer,
-    CreateTokenSerializer,
-)
+
+from .permissions import (IsAdmin, IsAdminOrReadOnly,
+                          IsAuthorModeratorAdminOrReadOnly)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          CreateTokenSerializer, GenreSerializer,
+                          RegistrationSerializer, ReviewSerializer,
+                          TitlePostSerializer, TitlesSerializer,
+                          UserSerializer)
 
 
 class UsersViewSet(viewsets.ModelViewSet):

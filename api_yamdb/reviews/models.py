@@ -1,8 +1,8 @@
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from users.models import User
 
 from .utils import year_of_creation_validator
-from users.models import User
 
 
 class Category(models.Model):
