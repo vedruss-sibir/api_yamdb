@@ -4,7 +4,7 @@ from api.filitres import TitleFilter
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -14,13 +14,20 @@ from users.models import User
 
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
 
-from .permissions import (IsAdmin, IsAdminOrReadOnly,
-                          IsAuthorModeratorAdminOrReadOnly)
-from .serializers import (CategorySerializer, CommentSerializer,
-                          CreateTokenSerializer, GenreSerializer,
-                          RegistrationSerializer, ReviewSerializer,
-                          TitlePostSerializer, TitlesSerializer,
-                          UserSerializer)
+from .mixins import CreateListDestroyViewSet
+
+from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorModeratorAdminOrReadOnly
+from .serializers import (
+    CategorySerializer,
+    CommentSerializer,
+    CreateTokenSerializer,
+    GenreSerializer,
+    RegistrationSerializer,
+    ReviewSerializer,
+    TitlePostSerializer,
+    TitlesSerializer,
+    UserSerializer,
+)
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -44,11 +51,7 @@ class UsersViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         if request.method == "PATCH":
-            serializer = self.get_serializer(
-                user,
-                data=request.data,
-                partial=True
-            )
+            serializer = self.get_serializer(user, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save(role=user.role)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -91,13 +94,6 @@ def create_token(request):
         status=status.HTTP_400_BAD_REQUEST,
     )
 
-
-class CreateListDestroyViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
     pass
 
 
@@ -114,9 +110,12 @@ class CategoryViewSet(CreateListDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+    )
     search_fields = ("name", "slug")
-    filterset_fields = ('name', 'slug')
+    filterset_fields = ("name", "slug")
     lookup_field = "slug"
 
 
@@ -124,7 +123,10 @@ class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitlesSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+    )
     filterset_class = TitleFilter
 
     def get_serializer_class(self):
