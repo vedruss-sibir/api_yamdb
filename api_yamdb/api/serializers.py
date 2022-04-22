@@ -116,7 +116,6 @@ class UserSerializer(serializers.ModelSerializer):
             "role",
             "bio",
         )
-        role = serializers.CharField(read_only=True)
 
 
 class RegistrationSerializer(serializers.Serializer):
