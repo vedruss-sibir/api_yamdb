@@ -1,3 +1,4 @@
+from xml.dom import UserDataHandler
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -34,7 +35,7 @@ class User(AbstractUser):
         'Разрешения пользователя',
         choices=ROLES,
         max_length=15,
-        default='user',
+        default=USER,
     )
     confirmation_code = models.CharField(
         'Код подтверждения',
