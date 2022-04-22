@@ -4,18 +4,20 @@ from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import viewsets, filters, status, mixins
 from rest_framework.response import Response
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import action, api_view
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import AccessToken
 
 from api.filitres import TitleFilter
-
-from reviews.models import Title, Genre, Category, Review, Comment
+from reviews.models import Title, Genre, Category, Review
 from users.models import User
-from .permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorModeratorAdminOrReadOnly
+from .permissions import (
+    IsAdmin,
+    IsAdminOrReadOnly,
+    IsAuthorModeratorAdminOrReadOnly
+)
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
 from .serializers import (
     GenreSerializer,
@@ -34,7 +36,6 @@ class UsersViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
-    pagination_class = LimitOffsetPagination
     lookup_field = "username"
     filter_backends = (filters.SearchFilter,)
     search_fields = ("username",)
@@ -52,7 +53,11 @@ class UsersViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         if request.method == "PATCH":
-            serializer = self.get_serializer(user, data=request.data, partial=True)
+            serializer = self.get_serializer(
+                user,
+                data=request.data,
+                partial=True
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save(role=user.role)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -96,29 +101,26 @@ def create_token(request):
     )
 
 
-class GenreViewSet(
+class CreateListDestroyViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
+    pass
+
+
+class GenreViewSet(CreateListDestroyViewSet):
     serializer_class = GenreSerializer
     queryset = Genre.objects.all()
-    pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ("name", "slug")
     lookup_field = "slug"
 
 
-class CategoryViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
+class CategoryViewSet(CreateListDestroyViewSet):
     queryset = Category.objects.all()
-    pagination_class = LimitOffsetPagination
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
@@ -126,19 +128,13 @@ class CategoryViewSet(
     filterset_fields = ('name', 'slug')
     lookup_field = "slug"
 
-    # def get_queryset(self):
-    #     category = get_object_or_404(Category, slug=self.kwargs.get("slug"))
-    #     return category
-
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitlesSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
     filterset_class = TitleFilter
-    search_fields = ("name", "genre__slug", "category__slug", "year")
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
@@ -147,7 +143,6 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    pagination_class = LimitOffsetPagination
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthorModeratorAdminOrReadOnly]
 
@@ -163,7 +158,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    pagination_class = LimitOffsetPagination
     serializer_class = CommentSerializer
     permission_classes = [IsAuthorModeratorAdminOrReadOnly]
 

@@ -6,6 +6,7 @@ ADMIN = 'admin'
 MODERATOR = 'moderator'
 USER = 'user'
 
+
 class User(AbstractUser):
     ROLES = {
         (ADMIN, 'admin'),
@@ -45,7 +46,6 @@ class User(AbstractUser):
         'Биография',
         blank=True,
     )
-
 
     def __str__(self):
         return str(self.username)
