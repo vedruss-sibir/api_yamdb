@@ -12,23 +12,23 @@ from users.models import User
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         # fields = "__all__"
-        exclude = ('id',)
+        exclude = ("id",)
         model = Category
 
 
 class GenreTitleSerializer(serializers.ModelSerializer):
-    genre = serializers.ReadOnlyField(source='genre.id')
-    title = serializers.ReadOnlyField(source='title.id')
+    genre = serializers.ReadOnlyField(source="genre.id")
+    title = serializers.ReadOnlyField(source="title.id")
 
     class Meta:
         model = GenreTitle
-        fields = ('genre', 'title')
+        fields = ("genre", "title")
 
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         # fields = "__all__"
-        exclude = ('id',)
+        exclude = ("id",)
         model = Genre
 
 
@@ -53,11 +53,12 @@ class TitlePostSerializer(serializers.ModelSerializer):
 
 
 class TitlesSerializer(serializers.ModelSerializer):
-    genre = serializers.StringRelatedField(many=True, read_only=True)
-    category = serializers.StringRelatedField(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
     rating = serializers.SerializerMethodField()
 
     class Meta:
+        model = Title
         fields = (
             "id",
             "name",
@@ -67,7 +68,6 @@ class TitlesSerializer(serializers.ModelSerializer):
             "genre",
             "rating",
         )
-        model = Title
 
     # def validate_year(self, value):
     #     year = date.today().year
@@ -84,23 +84,20 @@ class TitlesSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(read_only=True,
-                                          slug_field="username")
+    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
 
     class Meta:
         fields = "__all__"
         model = Review
         validators = [
             UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('author', 'title')
+                queryset=Review.objects.all(), fields=("author", "title")
             )
         ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(read_only=True,
-                                          slug_field="username")
+    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
 
     class Meta:
         fields = "__all__"
