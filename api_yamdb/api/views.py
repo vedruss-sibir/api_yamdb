@@ -1,5 +1,7 @@
 from uuid import uuid4
 
+from django.db.models import Avg
+
 from api.filitres import TitleFilter
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -131,6 +133,14 @@ class TitlesViewSet(viewsets.ModelViewSet):
         if self.action in ["list", "retrieve"]:
             return TitlesSerializer
         return TitlePostSerializer
+
+    def get_queryset(self):
+        if self.action in ('list', 'retrieve'):
+            queryset = (Title.objects.prefetch_related('reviews').all().
+                        annotate(rating=Avg('reviews__score')).
+                        order_by('name'))
+            return queryset
+        return Title.objects.all()
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
