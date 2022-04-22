@@ -60,7 +60,9 @@ class TitlesSerializer(serializers.ModelSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field="username", default=serializers.CurrentUserDefault()
+        read_only=True,
+        slug_field="username",
+        default=serializers.CurrentUserDefault(),
     )
 
     class Meta:
@@ -71,7 +73,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         if self.context["request"].method == "POST":
             user = self.context["request"].user
             title_id = self.context["view"].kwargs.get("title_id")
-            if Review.objects.filter(author_id=user.id, title_id=title_id).exists():
+            if Review.objects.filter(
+                author_id=user.id, title_id=title_id
+            ).exists():
                 raise serializers.ValidationError(
                     "Вы не можете оставить отзыв дважды! :)"
                 )
@@ -80,7 +84,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
-        read_only=True, slug_field="username", default=serializers.CurrentUserDefault()
+        read_only=True,
+        slug_field="username",
+        default=serializers.CurrentUserDefault(),
     )
 
     class Meta:
