@@ -11,7 +11,9 @@ router.register(r"categories", views.CategoryViewSet, basename="category")
 router.register(r"genres", views.GenreViewSet, basename="genre")
 router.register(r"users", views.UsersViewSet, basename="users")
 router.register(
-    r"titles/(?P<title_id>\d+)/reviews", views.ReviewViewSet, basename="reviews"
+    r"titles/(?P<title_id>\d+)/reviews",
+    views.ReviewViewSet,
+    basename="reviews",
 )
 router.register(
     r"titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments",
