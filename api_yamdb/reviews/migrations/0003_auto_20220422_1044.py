@@ -11,6 +11,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterModelOptions(
+            name='comment',
+            options={'verbose_name': 'Комментарий к отзыву', 'verbose_name_plural': 'Комментарии к отзыву'},
+        ),
+        migrations.AlterModelOptions(
+            name='review',
+            options={'ordering': ['-pub_date'], 'verbose_name': 'Отзыв о произведении', 'verbose_name_plural': 'Отзывы о произведении'},
+        ),
         migrations.AlterField(
             model_name='review',
             name='score',
