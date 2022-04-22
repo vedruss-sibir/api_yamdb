@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
 
@@ -7,15 +7,6 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         exclude = ("id",)
         model = Category
-
-
-class GenreTitleSerializer(serializers.ModelSerializer):
-    genre = serializers.ReadOnlyField(source="genre.id")
-    title = serializers.ReadOnlyField(source="title.id")
-
-    class Meta:
-        model = GenreTitle
-        fields = ("genre", "title")
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -66,22 +57,22 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field="username",
-        default=serializers.CurrentUserDefault()
+        default=serializers.CurrentUserDefault(),
     )
 
     class Meta:
-        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        fields = ("id", "text", "author", "score", "pub_date")
         model = Review
 
     def validate(self, data):
-        if self.context['request'].method == 'POST':
-            user = self.context['request'].user
-            title_id = self.context['view'].kwargs.get('title_id')
+        if self.context["request"].method == "POST":
+            user = self.context["request"].user
+            title_id = self.context["view"].kwargs.get("title_id")
             if Review.objects.filter(
-                    author_id=user.id, title_id=title_id
+                author_id=user.id, title_id=title_id
             ).exists():
                 raise serializers.ValidationError(
-                    'Вы не можете оставить отзыв дважды! :)'
+                    "Вы не можете оставить отзыв дважды! :)"
                 )
         return data
 
@@ -97,11 +88,11 @@ class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field="username",
-        default=serializers.CurrentUserDefault()
+        default=serializers.CurrentUserDefault(),
     )
 
     class Meta:
-        fields = ('id', 'text', 'author', 'pub_date')
+        fields = ("id", "text", "author", "pub_date")
         model = Comment
 
 
@@ -118,7 +109,6 @@ class UserSerializer(serializers.ModelSerializer):
             "role",
             "bio",
         )
-        role = serializers.CharField(read_only=True)
 
 
 class RegistrationSerializer(serializers.Serializer):
