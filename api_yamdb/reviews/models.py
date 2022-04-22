@@ -1,5 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
 from users.models import User
 
 from .utils import year_of_creation_validator
@@ -34,17 +35,19 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField(max_length=256, verbose_name="Название произведения")
+    name = models.CharField(
+        max_length=256,
+        verbose_name="Название произведения"
+    )
     year = models.SmallIntegerField(
-        validators=[year_of_creation_validator], verbose_name="Год произведения"
+        validators=[year_of_creation_validator],
+        verbose_name="Год произведения"
     )
     description = models.TextField(blank=True, null=True)
     genre = models.ManyToManyField(
         Genre,
         related_name="titles",
         verbose_name="Жанр",
-        blank=True,
-        null=True,
     )
     category = models.ForeignKey(
         Category,
@@ -71,7 +74,10 @@ class Review(models.Model):
     )
     text = models.TextField(verbose_name="Я думаю это ...")
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="reviews", verbose_name="Автор"
+        User,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        verbose_name="Автор"
     )
     score = models.IntegerField(
         validators=[
@@ -79,12 +85,17 @@ class Review(models.Model):
             MaxValueValidator(10, message="Максимальная оценка - 10"),
         ]
     )
-    pub_date = models.DateTimeField("Дата добавления", auto_now_add=True, db_index=True)
+    pub_date = models.DateTimeField(
+        "Дата добавления",
+        auto_now_add=True,
+        db_index=True
+    )
 
     class Meta:
         ordering = ['-pub_date']
         constraints = [
-            models.UniqueConstraint(fields=["author", "title"], name="author_review")
+            models.UniqueConstraint(fields=["author", "title"],
+                                    name="author_review")
         ]
         verbose_name = 'Отзыв о произведении'
         verbose_name_plural = 'Отзывы о произведении'
@@ -92,7 +103,9 @@ class Review(models.Model):
 
 class Comment(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="comments", verbose_name="Автор"
+        User, on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="Автор"
     )
     review = models.ForeignKey(
         Review,
