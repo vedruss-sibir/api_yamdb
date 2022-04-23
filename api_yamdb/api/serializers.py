@@ -1,7 +1,12 @@
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+
 from rest_framework import serializers
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
+
+from reviews.utils import year_of_creation_validator
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -23,7 +28,7 @@ class TitlePostSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         slug_field="slug", many=False, queryset=Category.objects.all()
     )
-
+    
     class Meta:
         model = Title
         fields = (
@@ -34,6 +39,12 @@ class TitlePostSerializer(serializers.ModelSerializer):
             "category",
             "genre",
         )
+        
+    def validate_year(self, value):
+        if not (0 < value <= timezone.now().year):
+                    raise serializers.ValidationError('Год произведения не может быть из будущего')
+        return value
+
 
 
 class TitlesSerializer(serializers.ModelSerializer):
