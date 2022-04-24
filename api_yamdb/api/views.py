@@ -1,6 +1,5 @@
 from uuid import uuid4
 
-from api.filitres import TitleFilter
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
@@ -11,11 +10,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
+from api_yamdb.settings import DEFAULT_FROM_EMAIL
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
 
-from api_yamdb.settings import DEFAULT_FROM_EMAIL
-
+from .filitres import TitleFilter
 from .mixins import CreateListDestroyViewSet
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAuthorModeratorAdminOrReadOnly)
@@ -93,8 +92,6 @@ def create_token(request):
         {"confirmation_code": "Неверный код подтверждения"},
         status=status.HTTP_400_BAD_REQUEST,
     )
-
-    pass
 
 
 class GenreViewSet(CreateListDestroyViewSet):
